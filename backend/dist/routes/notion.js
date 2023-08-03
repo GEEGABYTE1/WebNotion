@@ -40,7 +40,8 @@ var axios = require('axios');
 var express = require('express');
 var Client = require('@notionhq/client').Client;
 var router = express.Router();
-var notion = new Client({ auth: 'secret_iKopfGSg8g4o5XeuG0dILMWOVlQpbbCjOmolTNprKBZ' });
+require('dotenv').config();
+var notion = new Client({ auth: process.env.NOTION_API_KEY });
 var fetchNotionPage = function (pageId) { return __awaiter(void 0, void 0, void 0, function () {
     var response, err_1;
     return __generator(this, function (_a) {
@@ -48,7 +49,7 @@ var fetchNotionPage = function (pageId) { return __awaiter(void 0, void 0, void 
             case 0:
                 _a.trys.push([0, 2, , 3]);
                 console.log("in function");
-                return [4 /*yield*/, notion.pages.retrieve({ page_id: pageId })];
+                return [4 /*yield*/, notion.pages.retrieve({ page_id: pageId, type: "link_to_page" })];
             case 1:
                 response = _a.sent();
                 return [2 /*return*/, response];
@@ -72,10 +73,12 @@ var fetchBlockFromPage = function (pageId) { return __awaiter(void 0, void 0, vo
                 return [4 /*yield*/, notion.blocks.children.list({
                         block_id: pageId,
                         page_size: 50
-                    })];
+                    })
+                    //console.log("Block Response: ", response)
+                ];
             case 2:
                 response = _a.sent();
-                console.log("Block Response: ", response);
+                //console.log("Block Response: ", response)
                 return [2 /*return*/, response];
             case 3:
                 err_2 = _a.sent();
@@ -85,6 +88,52 @@ var fetchBlockFromPage = function (pageId) { return __awaiter(void 0, void 0, vo
         }
     });
 }); };
+function FilterAllLinks(rootPageId) {
+    return __awaiter(this, void 0, void 0, function () {
+        var link_array, queue_array, current_pageid, worked_with_api, i, cur_block_obj, cur_rich_text, mention_dict, href, new_page_id;
+        var _a;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    link_array = [];
+                    queue_array = [rootPageId];
+                    _b.label = 1;
+                case 1:
+                    if (!(queue_array.length > 0)) return [3 /*break*/, 3];
+                    current_pageid = queue_array[0];
+                    console.log("Current Pageid: ", current_pageid);
+                    return [4 /*yield*/, fetchBlockFromPage(current_pageid)];
+                case 2:
+                    worked_with_api = _b.sent();
+                    worked_with_api = worked_with_api['results'];
+                    for (i = 0; i <= worked_with_api.length; i++) {
+                        cur_block_obj = worked_with_api[i];
+                        if (cur_block_obj === undefined) {
+                            continue;
+                        }
+                        else {
+                            cur_rich_text = cur_block_obj['paragraph']['rich_text'];
+                            if (Object.keys(cur_rich_text).length >= 2) {
+                                mention_dict = cur_rich_text['0'];
+                                href = mention_dict['href'];
+                                new_page_id = href.split('/')[3];
+                                link_array.push((_a = {}, _a["https:www.notion.so/".concat(current_pageid)] = href, _a));
+                                queue_array.push(new_page_id);
+                            }
+                            else {
+                                continue;
+                            }
+                        }
+                    }
+                    queue_array = queue_array.slice(1);
+                    return [3 /*break*/, 1];
+                case 3:
+                    console.log("Link Array: ", link_array);
+                    return [2 /*return*/, link_array];
+            }
+        });
+    });
+}
 router.get('/page/:page_id', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var user_page_id, result;
     return __generator(this, function (_a) {
@@ -106,20 +155,20 @@ router.get('/page/:page_id', function (req, res) { return __awaiter(void 0, void
     });
 }); });
 router.get('/page/block/:block_id', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var user_page_id, result;
+    var user_page_id, filteredResult;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 user_page_id = req.params['block_id'];
-                return [4 /*yield*/, fetchBlockFromPage(user_page_id)];
+                return [4 /*yield*/, FilterAllLinks(user_page_id)];
             case 1:
-                result = _a.sent();
-                if (Object.keys(result).length > 0) {
-                    res.status(200).json(result);
+                filteredResult = _a.sent();
+                if (filteredResult.length > 0) {
+                    res.status(200).json(filteredResult);
                 }
                 else
                     [
-                        res.status(200).json({})
+                        res.status(200).json([])
                     ];
                 return [2 /*return*/];
         }
