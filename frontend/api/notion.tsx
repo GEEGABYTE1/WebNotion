@@ -2,6 +2,10 @@ import axios from "axios";
 import 'dotenv/config'
 
 
+
+
+
+
 export const fetchNotionPage = async(page_id:string) => {
     try {
         const response = await axios.get(`http://localhost:3001/notion/page/${page_id}`, {
@@ -23,8 +27,10 @@ export const fetchNotionBlock = async(page_id: string) => {
         })
 
         const result = await response
+        console.log("API result: ", result)
         
-        return result['data']['results']
+       
+        return result['data']
     } catch(err) {
         console.log("Error: ", err)
         return {}
