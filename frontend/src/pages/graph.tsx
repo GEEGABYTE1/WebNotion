@@ -8,7 +8,7 @@ import Graph from 'react-graph-vis'
 // API import 
 
 import { fetchNotionPage, fetchNotionBlock} from '../../api/notion'
-import { Crushed } from 'next/font/google'
+
 
 
 const options = {
@@ -88,10 +88,11 @@ const Animator = dynamic(
   
 
 
-export default function Graph() {
+export default function GraphViz() {
 
     const [edgeArray, setEdgeArray] = useState([])
     const [nodeArray, setNodeArray] = useState([])
+    const [state, setState] = useState({})
     
 
     const handlesetNodeArray = (block_array: []) => {
@@ -122,7 +123,7 @@ export default function Graph() {
             }
         } 
 
-        const node_array = []
+        const node_array: any = []
         for (let idx = 0; idx <= array.length; idx++) {
             const cur_link = array[idx]
             if (cur_link === undefined) {
@@ -136,12 +137,19 @@ export default function Graph() {
 
         console.log("Node Array: ", node_array)
         setNodeArray(node_array)
+        return node_array
         
     }
 
 
     const handleSetBlockDict = (block_array: []) => {
         setEdgeArray(block_array)
+        return block_array
+    }
+
+    const handleSetGraph = (graph_dict: {}) => {
+        console.log("Setting Graph Dict: ", graph_dict)
+        setState(graph_dict)
     }
 
 
@@ -154,20 +162,45 @@ export default function Graph() {
         //fetchNotionPage('13968157a86f4d8c9276d017c6deceed')
         const handlefetchNotionBlockAPI = async() => {
             const api_result = await fetchNotionBlock('13968157a86f4d8c9276d017c6deceed') 
-            handleSetBlockDict(api_result)
-            handlesetNodeArray(api_result)
+            const edge_array = handleSetBlockDict(api_result)
+            const node_array = handlesetNodeArray(api_result)
             console.log("Data to handle: ", api_result)
+
+            const graph_dict = {
+                counter: 5,
+                graph: {
+                    nodes: node_array,
+                    edges: []
+                },
+                events:{
+                    select: ({nodes, edges}) => {
+                        console.log("Selected Nodes: ", nodes)
+                        console.log("Selected Edges: ", edges )
+                    }
+                }
+            }
+
+            handleSetGraph(graph_dict)
+
+            
+
             
             
         }
 
         handlefetchNotionBlockAPI()
+
+        
         
     }, [])
+
+    
 
     return (
         <div>
             <Text>Notion Graph</Text>
+            <Graph graph={state['graph']} options={options} events={state['events']}/>
+            
         </div>
     )
 }
