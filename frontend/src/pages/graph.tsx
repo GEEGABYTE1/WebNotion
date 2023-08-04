@@ -21,8 +21,28 @@ export default function Graph() {
     const [pageId, setPageId] = useState('')
     const [rootPageId, setRootpageId] = useState('')
 
-    const handleSetBlockDict = (block_dict: {}) => {
-        setBlockDict(block_dict)
+    const handleSetBlockDict = (block_array: []) => {
+        const new_dict: {} = {}
+        for (let i =0; i<= block_array.length; i++) {
+            const cur_link_dict = block_array[i]
+            if (cur_link_dict === undefined) {
+                continue
+            } else {
+                const home_link: string = Object.keys(cur_link_dict)[0]
+                const transfer_link = cur_link_dict[home_link]
+
+                const new_dict_keys = Object.keys(new_dict)
+                if (new_dict_keys.includes(home_link)) {
+                    new_dict[home_link].push(home_link)
+                } else {
+                    new_dict[home_link] = [transfer_link]
+                }
+                
+            }
+        }
+
+        console.log("New Dict: ", new_dict)
+        
     }
 
 
