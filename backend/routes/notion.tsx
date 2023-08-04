@@ -73,7 +73,9 @@ async function FilterAllLinks(rootPageId: string) {
                     if (Object.keys(cur_rich_text).length >= 2) {
                         const mention_dict = cur_rich_text['0']
                         const href= mention_dict['href']
+                        
                         const new_page_id = href.split('/')[3]
+                       
                         link_array.push({[`https:www.notion.so/${current_pageid}`]: href})
                         queue_array.push(new_page_id)
     

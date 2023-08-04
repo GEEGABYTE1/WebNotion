@@ -90,7 +90,7 @@ var fetchBlockFromPage = function (pageId) { return __awaiter(void 0, void 0, vo
 }); };
 function FilterAllLinks(rootPageId) {
     return __awaiter(this, void 0, void 0, function () {
-        var link_array, queue_array, current_pageid, worked_with_api, i, cur_block_obj, cur_rich_text, mention_dict, href, new_page_id, err_3;
+        var link_array, queue_array, current_pageid, worked_with_api, i, cur_block_obj, cur_rich_text, mention_dict, href, dup_href, new_page_id, err_3;
         var _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
@@ -119,8 +119,9 @@ function FilterAllLinks(rootPageId) {
                             if (Object.keys(cur_rich_text).length >= 2) {
                                 mention_dict = cur_rich_text['0'];
                                 href = mention_dict['href'];
+                                dup_href = mention_dict['href'];
                                 new_page_id = href.split('/')[3];
-                                link_array.push((_a = {}, _a["https:www.notion.so/".concat(current_pageid)] = href, _a));
+                                link_array.push((_a = {}, _a["https://www.notion.so/".concat(current_pageid)] = href, _a));
                                 queue_array.push(new_page_id);
                             }
                             else {
