@@ -1,90 +1,18 @@
-import dynamic from 'next/dynamic'
-import {useEffect, useState} from 'react'
+'use client'
+
+import {useEffect, useState, useRef} from 'react'
 
 
 import { Text, Center } from '@chakra-ui/react'
-import Graph from 'react-graph-vis'
+
 
 // API import 
 
 import { fetchNotionPage, fetchNotionBlock} from '../../api/notion'
+import { ForceGraph2D, ForceGraph3D, ForceGraphVR, ForceGraphAR } from 'react-force-graph';
 
 
 
-const options = {
-    layout: {
-        randomSeed: undefined,
-        improvedLayout:true,
-        hierarchical: false,
-        
-    },
-   
-    edges: {
-        arrows:{
-          to:{
-            type: "image",
-            
-          }
-        },
-        color: {
-          
-          
-          color: "#fbfffe",
-          hover: '#819fb3',
-          opacity: 0.9,
-          
-        },
-        font: {
-          color: '#819fb3',
-          size: 16, 
-          face: 'spectral',
-          background: 'none',
-          strokeWidth: 3,
-  
-          
-          align: 'horizontal',
-          multi: false,
-          vadjust: 0
-        },
-        selfReferenceSize: 15,
-        selfReference:{
-            size: 15,
-            angle: Math.PI / 4,
-            renderBehindTheNode: true
-        },
-        smooth: {
-          enabled: true,
-          type: "dynamic",
-          roundness: 0.5
-        },
-    },
-    autoResize: true,
-    clickToUse: true,
-  
-  
-    nodes: {
-      shape: 'dot',
-      
-      
-      widthConstraint: false,
-      size: 9,
-      font :{
-        
-        color: "#fbfffe",
-        face: "spectral",
-  
-      }
-  
-    },
-    
-    
-  
-}
-
-const Animator = dynamic(
-    import("react-scroll-motion").then((it) => it.Animator),
-    {ssr:false}
-)
   
 
 
@@ -92,7 +20,8 @@ export default function GraphViz() {
 
     const [edgeArray, setEdgeArray] = useState([])
     const [nodeArray, setNodeArray] = useState([])
-    const [state, setState] = useState({})
+    const [realEdgeDictArray, setRealEdgeDictArray] = useState([])
+    
     
 
     const handlesetNodeArray = (block_array: []) => {
@@ -129,7 +58,7 @@ export default function GraphViz() {
             if (cur_link === undefined) {
                 continue 
             } else {
-                node_array.push({id: idx, label: cur_link, color: "#e0df41"})
+                node_array.push({id: (idx + 1), name: cur_link, val:cur_link})
             }
         }
 
@@ -141,16 +70,57 @@ export default function GraphViz() {
         
     }
 
+    const createEdgeArray= (node_array, api_result) => {
+        var node_dict: any = {}
+        
+
+        for (let node_idx =0 ; node_idx <= node_array.length; node_idx++) {
+            const cur_node_dict = node_array[node_idx]
+            if (cur_node_dict === undefined) {
+                continue
+            } else {
+                const node_name = cur_node_dict['name']
+                const name_id = cur_node_dict['id']
+                node_dict[node_name] = name_id
+            }
+        }
+
+        console.log("Node dict: ", node_dict)
+
+        const edge_array = []
+
+
+        for (let api_idx = 0; api_idx <= api_result.length; api_idx++) {
+            const cur_link_dict = api_result[api_idx]
+            if (cur_link_dict === undefined) {
+                continue
+            } else {
+                const source = Object.keys(cur_link_dict)[0]
+                
+                const target = Object.values(cur_link_dict)[0]
+                const source_id = node_dict[source]
+                const target_id = node_dict[target]
+                edge_array.push({source_id, target_id})
+
+
+            }
+        }
+
+        console.log("edge array Dict: ", edge_array)
+        return edge_array
+    }
+
+        
+        
+    
+
 
     const handleSetBlockDict = (block_array: []) => {
         setEdgeArray(block_array)
         return block_array
     }
 
-    const handleSetGraph = (graph_dict: {}) => {
-        console.log("Setting Graph Dict: ", graph_dict)
-        setState(graph_dict)
-    }
+    
 
 
 
@@ -159,28 +129,25 @@ export default function GraphViz() {
 
 
     useEffect(() => {
+
+
         //fetchNotionPage('13968157a86f4d8c9276d017c6deceed')
         const handlefetchNotionBlockAPI = async() => {
             const api_result = await fetchNotionBlock('13968157a86f4d8c9276d017c6deceed') 
-            const edge_array = handleSetBlockDict(api_result)
-            const node_array = handlesetNodeArray(api_result)
             console.log("Data to handle: ", api_result)
+            const node_array = handlesetNodeArray(api_result)
+            const edge_array = createEdgeArray(node_array, api_result)
+            
+            console.log("Final Nodes: ", node_array)
+            console.log("Final edge: ", edge_array)
+            const json_dict = {nodes: node_array, links: edge_array}
+            const json_string = JSON.stringify(json_dict)
+            
 
-            const graph_dict = {
-                counter: 5,
-                graph: {
-                    nodes: node_array,
-                    edges: []
-                },
-                events:{
-                    select: ({nodes, edges}) => {
-                        console.log("Selected Nodes: ", nodes)
-                        console.log("Selected Edges: ", edges )
-                    }
-                }
-            }
 
-            handleSetGraph(graph_dict)
+
+
+           
 
             
 
@@ -199,7 +166,9 @@ export default function GraphViz() {
     return (
         <div>
             <Text>Notion Graph</Text>
-            <Graph graph={state['graph']} options={options} events={state['events']}/>
+            
+            
+            
             
         </div>
     )
