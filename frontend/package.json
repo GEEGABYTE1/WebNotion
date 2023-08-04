@@ -25,6 +25,8 @@
     "next": "13.4.12",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-graph-vis": "^1.0.7",
+    "react-scroll-motion": "^0.3.2",
     "typescript": "5.1.6"
   }
 }
