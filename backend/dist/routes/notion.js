@@ -90,7 +90,7 @@ var fetchBlockFromPage = function (pageId) { return __awaiter(void 0, void 0, vo
 }); };
 function FilterAllLinks(rootPageId) {
     return __awaiter(this, void 0, void 0, function () {
-        var link_array, queue_array, current_pageid, worked_with_api, i, cur_block_obj, cur_rich_text, mention_dict, href, new_page_id;
+        var link_array, queue_array, current_pageid, worked_with_api, i, cur_block_obj, cur_rich_text, mention_dict, href, new_page_id, err_3;
         var _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
@@ -99,11 +99,14 @@ function FilterAllLinks(rootPageId) {
                     queue_array = [rootPageId];
                     _b.label = 1;
                 case 1:
-                    if (!(queue_array.length > 0)) return [3 /*break*/, 3];
+                    _b.trys.push([1, 5, , 6]);
+                    _b.label = 2;
+                case 2:
+                    if (!(queue_array.length > 0)) return [3 /*break*/, 4];
                     current_pageid = queue_array[0];
                     console.log("Current Pageid: ", current_pageid);
                     return [4 /*yield*/, fetchBlockFromPage(current_pageid)];
-                case 2:
+                case 3:
                     worked_with_api = _b.sent();
                     worked_with_api = worked_with_api['results'];
                     for (i = 0; i <= worked_with_api.length; i++) {
@@ -126,10 +129,15 @@ function FilterAllLinks(rootPageId) {
                         }
                     }
                     queue_array = queue_array.slice(1);
-                    return [3 /*break*/, 1];
-                case 3:
+                    return [3 /*break*/, 2];
+                case 4:
                     console.log("Link Array: ", link_array);
                     return [2 /*return*/, link_array];
+                case 5:
+                    err_3 = _b.sent();
+                    console.log("Error: ", err_3);
+                    return [2 /*return*/, []];
+                case 6: return [2 /*return*/];
             }
         });
     });
