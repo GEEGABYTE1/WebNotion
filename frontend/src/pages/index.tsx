@@ -4,7 +4,7 @@ import Link from 'next/link'
 export default function Home() {
   return (
     <div>
-      <Link href="/graph">
+      <Link href="/homepage">
         <Text>Notion Graph viz</Text>
       </Link>
     </div>
