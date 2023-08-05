@@ -6,6 +6,8 @@ import { ForceGraph2D, ForceGraph3D, ForceGraphVR, ForceGraphAR } from 'react-fo
 // api import
 import { getBlockInfo } from '../../api/notion'
 
+import styles from "../styles/Home.module.css"
+
 
 const testData = {
     "nodes": [ 
@@ -33,7 +35,7 @@ const testData = {
 export default function GraphViz() {
 
     const [apiData, setApiData] = useState()
-    const [graphDict, setGraphDict] = useState({})
+    const [graphDict, setGraphDict] = useState({nodes: [], links:[]})
 
     const createidDict = (api_result) => {
         const link_array = []
@@ -129,9 +131,14 @@ export default function GraphViz() {
     return (
         <div>
             <Text>Graph</Text>
-            {Object.keys(graphDict) === 0?<div></div>:
+
             
-            <ForceGraph3D graphData={graphDict} />
+
+            {graphDict['nodes'].length === 0?<div>Loading Graph...</div>:
+            
+                <div>
+                    <ForceGraph3D graphData={graphDict} />
+                </div>
             }
             
             
